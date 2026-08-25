@@ -22,39 +22,22 @@
         position: relative; 
     }
     
-    .hero-banner {
-        position: relative;
-        width: 100%;
-        min-height: 140px;
+    .title-container {
         display: flex;
         justify-content: center;
-        align-items: flex-end;
-        margin-bottom: 10px;
-        padding-top: 50px;
-    }
-    .hero-banner img {
-        position: absolute;
-        object-fit: contain;
-        pointer-events: none;
-        z-index: 10;
-    }
-    
-    .img-1 { width: 90px; left: 5%; bottom: 10px; transform: rotate(-10deg); }
-    .img-2 { width: 85px; left: 18%; bottom: 30px; transform: rotate(5deg); }
-    .img-3 { width: 100px; left: 28%; bottom: 5px; z-index: 12; }
-    .img-4 { width: 95px; right: 28%; bottom: 15px; transform: rotate(-5deg); z-index: 11; mix-blend-mode: multiply; }
-    .img-5 { width: 100px; right: 15%; bottom: -5px; z-index: 12; mix-blend-mode: multiply; }
-    .img-6 { width: 85px; right: 5%; bottom: 25px; transform: rotate(15deg); }
-    .img-7 { width: 80px; left: 40%; top: 10px; z-index: 5; }
-    .img-8 { width: 90px; right: 40%; top: 5px; z-index: 5; }
-
-    h1 { 
-        text-align: center; 
-        color: #2c3e50; 
-        position: relative; 
-        margin-top: 10px;
+        align-items: baseline;
+        gap: 15px;
+        margin-top: 20px;
         margin-bottom: 30px;
-        z-index: 20;
+    }
+    h1 { 
+        margin: 0;
+        color: #2c3e50; 
+    }
+    .author-tag {
+        font-size: 16px;
+        color: #e67e22;
+        font-weight: normal;
     }
     
     .save-section {
@@ -182,7 +165,6 @@
 
     @media (max-width: 900px) {
         .grid { grid-template-columns: repeat(3, 1fr); }
-        .hero-banner img { transform: scale(0.85); }
     }
     
     @media (max-width: 768px) {
@@ -191,22 +173,14 @@
         .equip-comparison-grid { grid-template-columns: 1fr; }
         .results { grid-template-columns: 1fr; }
         .full-width { grid-column: span 1; }
-        .hero-banner { min-height: 100px; padding-top: 20px; }
-        .img-1, .img-8 { display: none; }
-        .img-2 { left: 5%; }
-        .img-6 { right: 5%; }
-        .img-4 { right: 20%; }
-        .img-5 { right: 5%; bottom: -15px; }
         .bg-img-fixed-left { width: 80px; opacity: 0.7; }
+        .title-container { flex-direction: column; align-items: center; gap: 5px; }
     }
     
     @media (max-width: 480px) {
         .grid { grid-template-columns: 1fr; }
         .save-panel { flex-direction: column; }
         .save-panel button, .save-panel select { width: 100%; }
-        .hero-banner img { transform: scale(0.65); }
-        .img-7 { left: 20%; top: -10px; }
-        .img-3 { left: 10%; bottom: -10px; }
         .equip-row { grid-template-columns: 1fr; }
     }
 </style>
@@ -217,18 +191,10 @@
 
 <div class="container">
     
-    <div class="hero-banner">
-        <img src="11.png" class="img-1" alt="">
-        <img src="6.png" class="img-2" alt="">
-        <img src="5-removebg-preview.png" class="img-3" alt="">
-        <img src="Gemini_Generated_Image_wip85wwip85wwip8-removebg-preview.jpg" class="img-4" alt="">
-        <img src="Gemini_Generated_Image_yqk3u3yqk3u3yqk3-removebg-preview.jpg" class="img-5" alt="">
-        <img src="4.png" class="img-6" alt="">
-        <img src="18.png" class="img-7" alt="">
-        <img src="20.png" class="img-8" alt="">
+    <div class="title-container">
+        <h1>楓之谷放置冒險記計算機</h1>
+        <span class="author-tag">阿丸ivon製</span>
     </div>
-
-    <h1>楓之谷放置冒險記計算機 阿丸ivon</h1>
     
     <div class="save-section">
         <div class="save-panel">
