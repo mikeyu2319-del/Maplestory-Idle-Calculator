@@ -2,90 +2,166 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<title>楓之谷放置四軌效益與等價計算機</title>
+<title>楓之谷放置冒險記計算機</title>
 <style>
-    body { font-family: sans-serif; padding: 20px; background-color: #f4f4f9; color: #333; }
-    .container { max-width: 1100px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-    h1, h2 { text-align: center; color: #2c3e50; }
-    .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px; }
+    body { font-family: sans-serif; padding: 20px; background-color: #f4f4f9; color: #333; overflow-x: hidden; }
+    .container { max-width: 1100px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); position: relative; }
+    h1, h2 { text-align: center; color: #2c3e50; position: relative; display: flex; justify-content: center; align-items: center; gap: 10px; }
+    .instruction { font-size: 14px; color: #7f8c8d; text-align: center; margin-bottom: 20px; background: #fdfbf7; padding: 10px; border-radius: 4px; border-left: 4px solid #f39c12; }
+    
+    .save-panel { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; padding: 15px; background: #e8f4f8; border-radius: 6px; }
+    .save-panel select, .save-panel button { padding: 6px 12px; font-size: 14px; }
+    
+    .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 30px; }
     .input-group { display: flex; flex-direction: column; }
     label { font-size: 13px; margin-bottom: 5px; color: #555; }
     input, select { padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
-    .action-panel { background: #eef2f5; padding: 15px; border-radius: 6px; margin-bottom: 20px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; align-items: end; }
-    button { padding: 10px; background-color: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; width: 100%; }
+    
+    .action-panel { background: #eef2f5; padding: 15px; border-radius: 6px; margin-bottom: 20px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; align-items: end; position: relative; }
+    .action-btn-wrapper { position: relative; width: 100%; }
+    button { padding: 10px; background-color: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; width: 100%; transition: background-color 0.2s; }
     button:hover { background-color: #2980b9; }
-    .results { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
-    .card { background: #fff; border: 1px solid #ddd; border-radius: 6px; padding: 15px; }
+    
+    .results { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+    .card { background: #fff; border: 1px solid #ddd; border-radius: 6px; padding: 15px; position: relative; }
     .card h3 { margin-top: 0; color: #d35400; font-size: 16px; text-align: center; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-    .dps-increase { font-size: 20px; color: #27ae60; text-align: center; margin: 15px 0; }
+    .dps-increase { font-size: 20px; color: #27ae60; text-align: center; margin: 15px 0; font-weight: bold; }
     table { width: 100%; border-collapse: collapse; font-size: 13px; }
     th, td { border: 1px solid #eee; padding: 6px; text-align: center; }
     th { background-color: #f9f9f9; color: #666; }
     .full-width { grid-column: span 2; }
+    
+    .bg-img-fixed-left { position: fixed; bottom: 10px; left: 10px; width: 130px; z-index: 100; pointer-events: none; }
+    .bg-img-fixed-right { position: fixed; bottom: 10px; right: 10px; width: 160px; z-index: 100; pointer-events: none; }
+    .img-btn-float { position: absolute; top: -35px; right: -15px; width: 55px; pointer-events: none; transform: rotate(15deg); }
+    .img-card-float { position: absolute; top: -20px; right: -20px; pointer-events: none; z-index: 10; opacity: 0.95; }
 </style>
 </head>
 <body>
 
+<img src="1-removebg-preview.png" class="bg-img-fixed-left" alt="">
+<img src="11.png" class="bg-img-fixed-right" alt="">
+
 <div class="container">
-    <h1>楓之谷放置四軌效益與等價計算機</h1>
+    <h1>楓之谷放置冒險記計算機 阿丸ivon <img src="5-removebg-preview.png" style="height: 60px; pointer-events: none;" alt=""></h1>
     
-    <h2>第一部分：基礎面板數值輸入</h2>
-    <div class="grid">
-        <div class="input-group"><label>基礎攻擊力</label><input type="number" id="v_baseAtk" value="0" step="any"></div>
-        <div class="input-group"><label>攻擊力(%)</label><input type="number" id="v_atkPct" value="0" step="any"></div>
-        <div class="input-group"><label>基礎主屬性</label><input type="number" id="v_baseStat" value="0" step="any"></div>
-        <div class="input-group"><label>主屬性(%)</label><input type="number" id="v_statPct" value="0" step="any"></div>
-        
-        <div class="input-group"><label>一般傷害(%)</label><input type="number" id="v_dmg" value="0" step="any"></div>
-        <div class="input-group"><label>傷害增幅(%)</label><input type="number" id="v_dmgAmp" value="0" step="any"></div>
-        <div class="input-group"><label>屬性比例傷害(%)</label><input type="number" id="v_eleDmg" value="0" step="any"></div>
-        <div class="input-group"><label>最終傷害(%)</label><input type="number" id="v_finalDmg" value="0" step="any"></div>
-        
-        <div class="input-group"><label>一般怪物傷害(%)</label><input type="number" id="v_normalDmg" value="0" step="any"></div>
-        <div class="input-group"><label>BOSS怪物傷害(%)</label><input type="number" id="v_bossDmg" value="0" step="any"></div>
-        <div class="input-group"><label>基本攻擊傷害(%)</label><input type="number" id="v_basicDmg" value="0" step="any"></div>
-        <div class="input-group"><label>技能傷害(%)</label><input type="number" id="v_skillDmg" value="0" step="any"></div>
-        
-        <div class="input-group"><label>暴擊傷害(%)</label><input type="number" id="v_critDmg" value="0" step="any"></div>
-        <div class="input-group"><label>最大傷害(%)</label><input type="number" id="v_maxDmg" value="0" step="any"></div>
-        <div class="input-group"><label>最小傷害(%)</label><input type="number" id="v_minDmg" value="0" step="any"></div>
+    <div class="save-panel">
+        <select id="saveSlot">
+            <script>
+                for(let i=1; i<=15; i++){
+                    document.write('<option value="'+i+'">記憶存檔 '+i+'</option>');
+                }
+            </script>
+        </select>
+        <button onclick="saveData()" style="width: auto; background-color: #27ae60;">儲存資料</button>
+        <button onclick="loadData()" style="width: auto; background-color: #8e44ad;">讀取資料</button>
     </div>
 
-    <h2>第二部分：淨增幅與等價換算模擬</h2>
+    <div class="grid">
+        <div class="input-group"><label>攻擊力</label><input type="number" id="v_baseAtk" value="0" step="any"></div>
+        <div class="input-group"><label>攻擊力(%)</label><input type="number" id="v_atkPct" value="0" step="any"></div>
+        <div class="input-group"><label>暴擊傷害(%)</label><input type="number" id="v_critDmg" value="0" step="any"></div>
+        <div class="input-group"><label>主副屬性</label><input type="number" id="v_baseStat" value="0" step="any"></div>
+        
+        <div class="input-group"><label>主屬性(%)</label><input type="number" id="v_statPct" value="0" step="any"></div>
+        <div class="input-group"><label>屬性比例傷害</label><input type="number" id="v_eleDmg" value="0" step="any"></div>
+        <div class="input-group"><label>傷害(%)</label><input type="number" id="v_dmg" value="0" step="any"></div>
+        <div class="input-group"><label>傷害增幅(%)</label><input type="number" id="v_dmgAmp" value="0" step="any"></div>
+        
+        <div class="input-group"><label>基本攻擊傷害(%)</label><input type="number" id="v_basicDmg" value="0" step="any"></div>
+        <div class="input-group"><label>技能傷害(%)</label><input type="number" id="v_skillDmg" value="0" step="any"></div>
+        <div class="input-group"><label>BOSS怪物傷害(%)</label><input type="number" id="v_bossDmg" value="0" step="any"></div>
+        <div class="input-group"><label>一般怪物傷害(%)</label><input type="number" id="v_normalDmg" value="0" step="any"></div>
+        
+        <div class="input-group"><label>最小傷害倍率(%)</label><input type="number" id="v_minDmg" value="0" step="any"></div>
+        <div class="input-group"><label>最大傷害倍率(%)</label><input type="number" id="v_maxDmg" value="0" step="any"></div>
+        <div class="input-group"><label>最終傷害</label><input type="number" id="v_finalDmg" value="0" step="any"></div>
+    </div>
+
+    <h2>輸出的增幅</h2>
+    <p class="instruction">步驟說明：請先在下方左側選擇想要測試的目標屬性，接著在中間欄位輸入想要增加的數值，最後點擊右側按鈕即可獲得實質的輸出增幅百分比</p>
+    
     <div class="action-panel">
         <div class="input-group">
             <label>欲測試的目標屬性</label>
             <select id="targetStat">
-                <option value="v_baseAtk">基礎攻擊力</option>
+                <option value="v_baseAtk">攻擊力</option>
                 <option value="v_atkPct">攻擊力(%)</option>
-                <option value="v_baseStat">基礎主屬性</option>
+                <option value="v_critDmg">暴擊傷害(%)</option>
+                <option value="v_baseStat">主副屬性</option>
                 <option value="v_statPct">主屬性(%)</option>
-                <option value="v_dmg">一般傷害(%)</option>
+                <option value="v_eleDmg">屬性比例傷害</option>
+                <option value="v_dmg">傷害(%)</option>
                 <option value="v_dmgAmp">傷害增幅(%)</option>
-                <option value="v_eleDmg">屬性比例傷害(%)</option>
-                <option value="v_normalDmg">一般怪物傷害(%)</option>
-                <option value="v_bossDmg">BOSS怪物傷害(%)</option>
                 <option value="v_basicDmg">基本攻擊傷害(%)</option>
                 <option value="v_skillDmg">技能傷害(%)</option>
-                <option value="v_critDmg">暴擊傷害(%)</option>
-                <option value="v_maxDmg">最大傷害(%)</option>
-                <option value="v_finalDmg">最終傷害(%)</option>
+                <option value="v_bossDmg">BOSS怪物傷害(%)</option>
+                <option value="v_normalDmg">一般怪物傷害(%)</option>
+                <option value="v_minDmg">最小傷害倍率(%)</option>
+                <option value="v_maxDmg">最大傷害倍率(%)</option>
+                <option value="v_finalDmg">最終傷害</option>
             </select>
         </div>
         <div class="input-group">
             <label>欲新增的數值量</label>
             <input type="number" id="addValue" value="0" step="any">
         </div>
-        <div class="input-group">
+        <div class="action-btn-wrapper">
+            <img src="4.png" class="img-btn-float" alt="">
             <button onclick="calculate()">執行模擬運算</button>
         </div>
     </div>
 
+    <h2>等價換算模擬</h2>
+    <p class="instruction">步驟說明：本區塊與上述運算連動，會自動幫您換算當前測試的屬性增幅，若要達到相同效益，其他屬性分別需要增加多少數值</p>
+    
     <div class="results" id="resultsContainer"></div>
 </div>
 
 <script>
+let statKeys = [
+    'v_baseAtk', 'v_atkPct', 'v_critDmg', 'v_baseStat', 
+    'v_statPct', 'v_eleDmg', 'v_dmg', 'v_dmgAmp', 
+    'v_basicDmg', 'v_skillDmg', 'v_bossDmg', 'v_normalDmg', 
+    'v_minDmg', 'v_maxDmg', 'v_finalDmg'
+];
+
+let decors = [
+    { src: '18.png', width: '80px' },
+    { src: '20.png', width: '90px' },
+    { src: '6.png', width: '100px' },
+    { src: 'Gemini_Generated_Image_yqk3u3yqk3u3yqk3-removebg-preview.jpg', width: '70px', blend: 'multiply' },
+    { src: 'Gemini_Generated_Image_wip85wwip85wwip8-removebg-preview.jpg', width: '75px', blend: 'multiply' }
+];
+
 function getVal(id) { return parseFloat(document.getElementById(id).value) || 0; }
+function setVal(id, val) { document.getElementById(id).value = val; }
+
+function saveData() {
+    let slot = document.getElementById('saveSlot').value;
+    let data = {};
+    for (let i = 0; i < statKeys.length; i++) {
+        data[statKeys[i]] = getVal(statKeys[i]);
+    }
+    localStorage.setItem('ms_idle_calc_' + slot, JSON.stringify(data));
+    alert('第 ' + slot + ' 筆資料儲存成功');
+}
+
+function loadData() {
+    let slot = document.getElementById('saveSlot').value;
+    let raw = localStorage.getItem('ms_idle_calc_' + slot);
+    if (raw) {
+        let data = JSON.parse(raw);
+        for (let i = 0; i < statKeys.length; i++) {
+            if (data[statKeys[i]] !== undefined) {
+                setVal(statKeys[i], data[statKeys[i]]);
+            }
+        }
+        alert('第 ' + slot + ' 筆資料讀取成功');
+    } else {
+        alert('尚未建立第 ' + slot + ' 筆存檔');
+    }
+}
 
 function calcMultiplier(stats, isBoss, isSkill) {
     let core = (stats.v_baseAtk * (1 + stats.v_atkPct/100)) * 
@@ -108,45 +184,45 @@ function calculateEquivalent(stats, incRate, isBoss, isSkill) {
     let attackTypeKey = isSkill ? 'v_skillDmg' : 'v_basicDmg';
     
     return [
-        { name: '基礎攻擊力', req: stats.v_baseAtk * incRate },
+        { name: '攻擊力', req: stats.v_baseAtk * incRate },
         { name: '攻擊力(%)', req: (100 + stats.v_atkPct) * incRate },
-        { name: '基礎主屬性', req: stats.v_baseStat * incRate },
-        { name: '主屬性(%)', req: (100 + stats.v_statPct) * incRate },
-        { name: '一般傷害(%)', req: (100 + stats.v_dmg) * incRate },
-        { name: '傷害增幅(%)', req: (100 + stats.v_dmgAmp) * incRate },
-        { name: '屬性比例(%)', req: (100 + stats.v_eleDmg) * incRate },
-        { name: isBoss ? 'BOSS傷害(%)' : '一般怪物傷害(%)', req: (100 + stats[targetTypeKey]) * incRate },
-        { name: isSkill ? '技能傷害(%)' : '基本攻擊(%)', req: (100 + stats[attackTypeKey]) * incRate },
         { name: '暴擊傷害(%)', req: stats.v_critDmg * incRate },
-        { name: '最大傷害(%)', req: (stats.v_maxDmg + stats.v_minDmg) * incRate },
-        { name: '最終傷害(%)', req: (100 + stats.v_finalDmg) * incRate }
+        { name: '主副屬性', req: stats.v_baseStat * incRate },
+        { name: '主屬性(%)', req: (100 + stats.v_statPct) * incRate },
+        { name: '屬性比例傷害', req: (100 + stats.v_eleDmg) * incRate },
+        { name: '傷害(%)', req: (100 + stats.v_dmg) * incRate },
+        { name: '傷害增幅(%)', req: (100 + stats.v_dmgAmp) * incRate },
+        { name: isSkill ? '技能傷害(%)' : '基本攻擊(%)', req: (100 + stats[attackTypeKey]) * incRate },
+        { name: isBoss ? 'BOSS傷害(%)' : '一般怪物傷害(%)', req: (100 + stats[targetTypeKey]) * incRate },
+        { name: '最小與最大傷害和', req: (stats.v_maxDmg + stats.v_minDmg) * incRate },
+        { name: '最終傷害', req: (100 + stats.v_finalDmg) * incRate }
     ];
 }
 
-function renderCard(title, incRate, eqData) {
-    let rows = eqData.map(item => `<tr><td>${item.name}</td><td>+ ${item.req.toFixed(2)}</td></tr>`).join('');
-    return `
-        <div class="card">
-            <h3>${title}</h3>
-            <div class="dps-increase">淨輸出增幅: ${(incRate * 100).toFixed(4)} %</div>
-            <table>
-                <tr><th>等價需求屬性</th><th>需增加量</th></tr>
-                ${rows}
-            </table>
-        </div>
-    `;
+function renderCard(title, incRate, eqData, isFullWidth, decorIndex) {
+    let rows = '';
+    for (let i = 0; i < eqData.length; i++) {
+        rows += '<tr><td>' + eqData[i].name + '</td><td>+ ' + eqData[i].req.toFixed(2) + '</td></tr>';
+    }
+    let cssClass = isFullWidth ? 'card full-width' : 'card';
+    let imgHtml = '';
+    
+    if (decorIndex >= 0 && decorIndex < decors.length) {
+        let mix = decors[decorIndex].blend ? 'mix-blend-mode:' + decors[decorIndex].blend + ';' : '';
+        imgHtml = '<img src="' + decors[decorIndex].src + '" class="img-card-float" style="width:' + decors[decorIndex].width + ';' + mix + '" alt="">';
+    }
+    
+    return '<div class="' + cssClass + '">' + imgHtml +
+           '<h3>' + title + '</h3>' +
+           '<div class="dps-increase">淨輸出增幅: ' + (incRate * 100).toFixed(4) + ' %</div>' +
+           '<table><tr><th>等價需求屬性</th><th>需增加量</th></tr>' + rows + '</table></div>';
 }
 
 function calculate() {
-    let stats = {
-        v_baseAtk: getVal('v_baseAtk'), v_atkPct: getVal('v_atkPct'),
-        v_baseStat: getVal('v_baseStat'), v_statPct: getVal('v_statPct'),
-        v_dmg: getVal('v_dmg'), v_dmgAmp: getVal('v_dmgAmp'),
-        v_eleDmg: getVal('v_eleDmg'), v_finalDmg: getVal('v_finalDmg'),
-        v_normalDmg: getVal('v_normalDmg'), v_bossDmg: getVal('v_bossDmg'),
-        v_basicDmg: getVal('v_basicDmg'), v_skillDmg: getVal('v_skillDmg'),
-        v_critDmg: getVal('v_critDmg'), v_maxDmg: getVal('v_maxDmg'), v_minDmg: getVal('v_minDmg')
-    };
+    let stats = {};
+    for (let i = 0; i < statKeys.length; i++) {
+        stats[statKeys[i]] = getVal(statKeys[i]);
+    }
 
     let target = document.getElementById('targetStat').value;
     let addVal = getVal('addValue');
@@ -162,7 +238,6 @@ function calculate() {
     ];
 
     let isMutexTarget = ['v_normalDmg', 'v_bossDmg', 'v_basicDmg', 'v_skillDmg'].includes(target);
-
     let htmlOutput = '';
 
     if (!isMutexTarget) {
@@ -171,26 +246,16 @@ function calculate() {
         let newMult = calcMultiplier(newStats, s.isBoss, s.isSkill);
         let incRate = oldMult > 0 ? (newMult / oldMult) - 1 : 0;
         let eqData = calculateEquivalent(stats, incRate, s.isBoss, s.isSkill);
-        
-        let rows = eqData.map(item => `<tr><td>${item.name}</td><td>+ ${item.req.toFixed(2)}</td></tr>`).join('');
-        htmlOutput = `
-            <div class="card full-width" style="grid-column: span 2;">
-                <h3>全情境通用效益分析 (共用屬性變動)</h3>
-                <div class="dps-increase">淨輸出增幅: ${(incRate * 100).toFixed(4)} %</div>
-                <table>
-                    <tr><th>等價需求屬性</th><th>需增加量</th></tr>
-                    ${rows}
-                </table>
-            </div>
-        `;
+        htmlOutput = renderCard('全情境通用效益分析 (共用屬性變動)', incRate, eqData, true, 0);
     } else {
-        scenarios.forEach(s => {
+        for (let i = 0; i < scenarios.length; i++) {
+            let s = scenarios[i];
             let oldMult = calcMultiplier(stats, s.isBoss, s.isSkill);
             let newMult = calcMultiplier(newStats, s.isBoss, s.isSkill);
             let incRate = oldMult > 0 ? (newMult / oldMult) - 1 : 0;
             let eqData = calculateEquivalent(stats, incRate, s.isBoss, s.isSkill);
-            htmlOutput += renderCard(s.title, incRate, eqData);
-        });
+            htmlOutput += renderCard(s.title, incRate, eqData, false, i + 1);
+        }
     }
 
     document.getElementById('resultsContainer').innerHTML = htmlOutput;
