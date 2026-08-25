@@ -2,10 +2,10 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<title>楓之谷放置四軌效益計算機</title>
+<title>楓之谷放置四軌效益與等價計算機</title>
 <style>
     body { font-family: sans-serif; padding: 20px; background-color: #f4f4f9; color: #333; }
-    .container { max-width: 1000px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    .container { max-width: 1100px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
     h1, h2 { text-align: center; color: #2c3e50; }
     .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px; }
     .input-group { display: flex; flex-direction: column; }
@@ -17,45 +17,48 @@
     .results { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
     .card { background: #fff; border: 1px solid #ddd; border-radius: 6px; padding: 15px; }
     .card h3 { margin-top: 0; color: #d35400; font-size: 16px; text-align: center; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-    .dps-increase { font-size: 24px; color: #27ae60; text-align: center; margin: 15px 0; }
+    .dps-increase { font-size: 20px; color: #27ae60; text-align: center; margin: 15px 0; }
     table { width: 100%; border-collapse: collapse; font-size: 13px; }
     th, td { border: 1px solid #eee; padding: 6px; text-align: center; }
     th { background-color: #f9f9f9; color: #666; }
+    .full-width { grid-column: span 2; }
 </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>楓之谷放置四軌效益計算機</h1>
+    <h1>楓之谷放置四軌效益與等價計算機</h1>
     
-    <h2>基礎面板數值輸入</h2>
+    <h2>第一部分：基礎面板數值輸入</h2>
     <div class="grid">
-        <div class="input-group"><label>基礎攻擊力</label><input type="number" id="v_baseAtk" value="715678"></div>
-        <div class="input-group"><label>攻擊力(%)</label><input type="number" id="v_atkPct" value="26601.4"></div>
-        <div class="input-group"><label>基礎主屬性</label><input type="number" id="v_baseStat" value="36368"></div>
-        <div class="input-group"><label>主屬性(%)</label><input type="number" id="v_statPct" value="237.1"></div>
+        <div class="input-group"><label>基礎攻擊力</label><input type="number" id="v_baseAtk" value="0" step="any"></div>
+        <div class="input-group"><label>攻擊力(%)</label><input type="number" id="v_atkPct" value="0" step="any"></div>
+        <div class="input-group"><label>基礎主屬性</label><input type="number" id="v_baseStat" value="0" step="any"></div>
+        <div class="input-group"><label>主屬性(%)</label><input type="number" id="v_statPct" value="0" step="any"></div>
         
-        <div class="input-group"><label>一般傷害(%)</label><input type="number" id="v_dmg" value="725.4"></div>
-        <div class="input-group"><label>傷害增幅(%)</label><input type="number" id="v_dmgAmp" value="58.5"></div>
-        <div class="input-group"><label>屬性比例傷害(%)</label><input type="number" id="v_eleDmg" value="1209.5"></div>
-        <div class="input-group"><label>最終傷害(%)</label><input type="number" id="v_finalDmg" value="19.6"></div>
+        <div class="input-group"><label>一般傷害(%)</label><input type="number" id="v_dmg" value="0" step="any"></div>
+        <div class="input-group"><label>傷害增幅(%)</label><input type="number" id="v_dmgAmp" value="0" step="any"></div>
+        <div class="input-group"><label>屬性比例傷害(%)</label><input type="number" id="v_eleDmg" value="0" step="any"></div>
+        <div class="input-group"><label>最終傷害(%)</label><input type="number" id="v_finalDmg" value="0" step="any"></div>
         
-        <div class="input-group"><label>一般怪物傷害(%)</label><input type="number" id="v_normalDmg" value="174.2"></div>
-        <div class="input-group"><label>BOSS怪物傷害(%)</label><input type="number" id="v_bossDmg" value="195.2"></div>
-        <div class="input-group"><label>基本攻擊傷害(%)</label><input type="number" id="v_basicDmg" value="54.1"></div>
-        <div class="input-group"><label>技能傷害(%)</label><input type="number" id="v_skillDmg" value="93.5"></div>
+        <div class="input-group"><label>一般怪物傷害(%)</label><input type="number" id="v_normalDmg" value="0" step="any"></div>
+        <div class="input-group"><label>BOSS怪物傷害(%)</label><input type="number" id="v_bossDmg" value="0" step="any"></div>
+        <div class="input-group"><label>基本攻擊傷害(%)</label><input type="number" id="v_basicDmg" value="0" step="any"></div>
+        <div class="input-group"><label>技能傷害(%)</label><input type="number" id="v_skillDmg" value="0" step="any"></div>
         
-        <div class="input-group"><label>暴擊傷害(%)</label><input type="number" id="v_critDmg" value="259.6"></div>
-        <div class="input-group"><label>最大傷害(%)</label><input type="number" id="v_maxDmg" value="340"></div>
-        <div class="input-group"><label>最小傷害(%)</label><input type="number" id="v_minDmg" value="205.9"></div>
+        <div class="input-group"><label>暴擊傷害(%)</label><input type="number" id="v_critDmg" value="0" step="any"></div>
+        <div class="input-group"><label>最大傷害(%)</label><input type="number" id="v_maxDmg" value="0" step="any"></div>
+        <div class="input-group"><label>最小傷害(%)</label><input type="number" id="v_minDmg" value="0" step="any"></div>
     </div>
 
-    <h2>模擬效益計算</h2>
+    <h2>第二部分：淨增幅與等價換算模擬</h2>
     <div class="action-panel">
         <div class="input-group">
-            <label>目標提升屬性</label>
+            <label>欲測試的目標屬性</label>
             <select id="targetStat">
+                <option value="v_baseAtk">基礎攻擊力</option>
                 <option value="v_atkPct">攻擊力(%)</option>
+                <option value="v_baseStat">基礎主屬性</option>
                 <option value="v_statPct">主屬性(%)</option>
                 <option value="v_dmg">一般傷害(%)</option>
                 <option value="v_dmgAmp">傷害增幅(%)</option>
@@ -71,10 +74,10 @@
         </div>
         <div class="input-group">
             <label>欲新增的數值量</label>
-            <input type="number" id="addValue" value="100">
+            <input type="number" id="addValue" value="0" step="any">
         </div>
         <div class="input-group">
-            <button onclick="calculate()">執行運算</button>
+            <button onclick="calculate()">執行模擬運算</button>
         </div>
     </div>
 
@@ -105,7 +108,9 @@ function calculateEquivalent(stats, incRate, isBoss, isSkill) {
     let attackTypeKey = isSkill ? 'v_skillDmg' : 'v_basicDmg';
     
     return [
+        { name: '基礎攻擊力', req: stats.v_baseAtk * incRate },
         { name: '攻擊力(%)', req: (100 + stats.v_atkPct) * incRate },
+        { name: '基礎主屬性', req: stats.v_baseStat * incRate },
         { name: '主屬性(%)', req: (100 + stats.v_statPct) * incRate },
         { name: '一般傷害(%)', req: (100 + stats.v_dmg) * incRate },
         { name: '傷害增幅(%)', req: (100 + stats.v_dmgAmp) * incRate },
@@ -119,11 +124,11 @@ function calculateEquivalent(stats, incRate, isBoss, isSkill) {
 }
 
 function renderCard(title, incRate, eqData) {
-    let rows = eqData.map(item => `<tr><td>${item.name}</td><td>+ ${item.req.toFixed(2)} %</td></tr>`).join('');
+    let rows = eqData.map(item => `<tr><td>${item.name}</td><td>+ ${item.req.toFixed(2)}</td></tr>`).join('');
     return `
         <div class="card">
             <h3>${title}</h3>
-            <div class="dps-increase">淨增幅: ${(incRate * 100).toFixed(4)} %</div>
+            <div class="dps-increase">淨輸出增幅: ${(incRate * 100).toFixed(4)} %</div>
             <table>
                 <tr><th>等價需求屬性</th><th>需增加量</th></tr>
                 ${rows}
@@ -156,14 +161,37 @@ function calculate() {
         { title: '情境四：BOSS怪物 ＋ 技能攻擊', isBoss: true, isSkill: true }
     ];
 
+    let isMutexTarget = ['v_normalDmg', 'v_bossDmg', 'v_basicDmg', 'v_skillDmg'].includes(target);
+
     let htmlOutput = '';
-    scenarios.forEach(s => {
+
+    if (!isMutexTarget) {
+        let s = scenarios[0];
         let oldMult = calcMultiplier(stats, s.isBoss, s.isSkill);
         let newMult = calcMultiplier(newStats, s.isBoss, s.isSkill);
         let incRate = oldMult > 0 ? (newMult / oldMult) - 1 : 0;
         let eqData = calculateEquivalent(stats, incRate, s.isBoss, s.isSkill);
-        htmlOutput += renderCard(s.title, incRate, eqData);
-    });
+        
+        let rows = eqData.map(item => `<tr><td>${item.name}</td><td>+ ${item.req.toFixed(2)}</td></tr>`).join('');
+        htmlOutput = `
+            <div class="card full-width" style="grid-column: span 2;">
+                <h3>全情境通用效益分析 (共用屬性變動)</h3>
+                <div class="dps-increase">淨輸出增幅: ${(incRate * 100).toFixed(4)} %</div>
+                <table>
+                    <tr><th>等價需求屬性</th><th>需增加量</th></tr>
+                    ${rows}
+                </table>
+            </div>
+        `;
+    } else {
+        scenarios.forEach(s => {
+            let oldMult = calcMultiplier(stats, s.isBoss, s.isSkill);
+            let newMult = calcMultiplier(newStats, s.isBoss, s.isSkill);
+            let incRate = oldMult > 0 ? (newMult / oldMult) - 1 : 0;
+            let eqData = calculateEquivalent(stats, incRate, s.isBoss, s.isSkill);
+            htmlOutput += renderCard(s.title, incRate, eqData);
+        });
+    }
 
     document.getElementById('resultsContainer').innerHTML = htmlOutput;
 }
