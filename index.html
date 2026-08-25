@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>楓之谷放置四軌效益計算機</title>
+<style>
+    body { font-family: sans-serif; padding: 20px; background-color: #f4f4f9; color: #333; }
+    .container { max-width: 1000px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    h1, h2 { text-align: center; color: #2c3e50; }
+    .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px; }
+    .input-group { display: flex; flex-direction: column; }
+    label { font-size: 13px; margin-bottom: 5px; color: #555; }
+    input, select { padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
+    .action-panel { background: #eef2f5; padding: 15px; border-radius: 6px; margin-bottom: 20px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; align-items: end; }
+    button { padding: 10px; background-color: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; width: 100%; }
+    button:hover { background-color: #2980b9; }
+    .results { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+    .card { background: #fff; border: 1px solid #ddd; border-radius: 6px; padding: 15px; }
+    .card h3 { margin-top: 0; color: #d35400; font-size: 16px; text-align: center; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+    .dps-increase { font-size: 24px; color: #27ae60; text-align: center; margin: 15px 0; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { border: 1px solid #eee; padding: 6px; text-align: center; }
+    th { background-color: #f9f9f9; color: #666; }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h1>楓之谷放置四軌效益計算機</h1>
+    
+    <h2>基礎面板數值輸入</h2>
+    <div class="grid">
+        <div class="input-group"><label>基礎攻擊力</label><input type="number" id="v_baseAtk" value="715678"></div>
+        <div class="input-group"><label>攻擊力(%)</label><input type="number" id="v_atkPct" value="26601.4"></div>
+        <div class="input-group"><label>基礎主屬性</label><input type="number" id="v_baseStat" value="36368"></div>
+        <div class="input-group"><label>主屬性(%)</label><input type="number" id="v_statPct" value="237.1"></div>
+        
+        <div class="input-group"><label>一般傷害(%)</label><input type="number" id="v_dmg" value="725.4"></div>
+        <div class="input-group"><label>傷害增幅(%)</label><input type="number" id="v_dmgAmp" value="58.5"></div>
+        <div class="input-group"><label>屬性比例傷害(%)</label><input type="number" id="v_eleDmg" value="1209.5"></div>
+        <div class="input-group"><label>最終傷害(%)</label><input type="number" id="v_finalDmg" value="19.6"></div>
+        
+        <div class="input-group"><label>一般怪物傷害(%)</label><input type="number" id="v_normalDmg" value="174.2"></div>
+        <div class="input-group"><label>BOSS怪物傷害(%)</label><input type="number" id="v_bossDmg" value="195.2"></div>
+        <div class="input-group"><label>基本攻擊傷害(%)</label><input type="number" id="v_basicDmg" value="54.1"></div>
+        <div class="input-group"><label>技能傷害(%)</label><input type="number" id="v_skillDmg" value="93.5"></div>
+        
+        <div class="input-group"><label>暴擊傷害(%)</label><input type="number" id="v_critDmg" value="259.6"></div>
+        <div class="input-group"><label>最大傷害(%)</label><input type="number" id="v_maxDmg" value="340"></div>
+        <div class="input-group"><label>最小傷害(%)</label><input type="number" id="v_minDmg" value="205.9"></div>
+    </div>
+
+    <h2>模擬效益計算</h2>
+    <div class="action-panel">
+        <div class="input-group">
+            <label>目標提升屬性</label>
+            <select id="targetStat">
+                <option value="v_atkPct">攻擊力(%)</option>
+                <option value="v_statPct">主屬性(%)</option>
+                <option value="v_dmg">一般傷害(%)</option>
+                <option value="v_dmgAmp">傷害增幅(%)</option>
+                <option value="v_eleDmg">屬性比例傷害(%)</option>
+                <option value="v_normalDmg">一般怪物傷害(%)</option>
+                <option value="v_bossDmg">BOSS怪物傷害(%)</option>
+                <option value="v_basicDmg">基本攻擊傷害(%)</option>
+                <option value="v_skillDmg">技能傷害(%)</option>
+                <option value="v_critDmg">暴擊傷害(%)</option>
+                <option value="v_maxDmg">最大傷害(%)</option>
+                <option value="v_finalDmg">最終傷害(%)</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label>欲新增的數值量</label>
+            <input type="number" id="addValue" value="100">
+        </div>
+        <div class="input-group">
+            <button onclick="calculate()">執行運算</button>
+        </div>
+    </div>
+
+    <div class="results" id="resultsContainer"></div>
+</div>
+
+<script>
+function getVal(id) { return parseFloat(document.getElementById(id).value) || 0; }
+
+function calcMultiplier(stats, isBoss, isSkill) {
+    let core = (stats.v_baseAtk * (1 + stats.v_atkPct/100)) * 
+               (stats.v_baseStat * (1 + stats.v_statPct/100)) * 
+               (1 + stats.v_dmg/100) * 
+               (1 + stats.v_dmgAmp/100) * 
+               (1 + stats.v_eleDmg/100) * 
+               (stats.v_critDmg/100) * 
+               ((stats.v_maxDmg + stats.v_minDmg)/200) * 
+               (1 + stats.v_finalDmg/100);
+               
+    let targetTypeDmg = isBoss ? stats.v_bossDmg : stats.v_normalDmg;
+    let attackTypeDmg = isSkill ? stats.v_skillDmg : stats.v_basicDmg;
+    
+    return core * (1 + targetTypeDmg/100) * (1 + attackTypeDmg/100);
+}
+
+function calculateEquivalent(stats, incRate, isBoss, isSkill) {
+    let targetTypeKey = isBoss ? 'v_bossDmg' : 'v_normalDmg';
+    let attackTypeKey = isSkill ? 'v_skillDmg' : 'v_basicDmg';
+    
+    return [
+        { name: '攻擊力(%)', req: (100 + stats.v_atkPct) * incRate },
+        { name: '主屬性(%)', req: (100 + stats.v_statPct) * incRate },
+        { name: '一般傷害(%)', req: (100 + stats.v_dmg) * incRate },
+        { name: '傷害增幅(%)', req: (100 + stats.v_dmgAmp) * incRate },
+        { name: '屬性比例(%)', req: (100 + stats.v_eleDmg) * incRate },
+        { name: isBoss ? 'BOSS傷害(%)' : '一般怪物傷害(%)', req: (100 + stats[targetTypeKey]) * incRate },
+        { name: isSkill ? '技能傷害(%)' : '基本攻擊(%)', req: (100 + stats[attackTypeKey]) * incRate },
+        { name: '暴擊傷害(%)', req: stats.v_critDmg * incRate },
+        { name: '最大傷害(%)', req: (stats.v_maxDmg + stats.v_minDmg) * incRate },
+        { name: '最終傷害(%)', req: (100 + stats.v_finalDmg) * incRate }
+    ];
+}
+
+function renderCard(title, incRate, eqData) {
+    let rows = eqData.map(item => `<tr><td>${item.name}</td><td>+ ${item.req.toFixed(2)} %</td></tr>`).join('');
+    return `
+        <div class="card">
+            <h3>${title}</h3>
+            <div class="dps-increase">淨增幅: ${(incRate * 100).toFixed(4)} %</div>
+            <table>
+                <tr><th>等價需求屬性</th><th>需增加量</th></tr>
+                ${rows}
+            </table>
+        </div>
+    `;
+}
+
+function calculate() {
+    let stats = {
+        v_baseAtk: getVal('v_baseAtk'), v_atkPct: getVal('v_atkPct'),
+        v_baseStat: getVal('v_baseStat'), v_statPct: getVal('v_statPct'),
+        v_dmg: getVal('v_dmg'), v_dmgAmp: getVal('v_dmgAmp'),
+        v_eleDmg: getVal('v_eleDmg'), v_finalDmg: getVal('v_finalDmg'),
+        v_normalDmg: getVal('v_normalDmg'), v_bossDmg: getVal('v_bossDmg'),
+        v_basicDmg: getVal('v_basicDmg'), v_skillDmg: getVal('v_skillDmg'),
+        v_critDmg: getVal('v_critDmg'), v_maxDmg: getVal('v_maxDmg'), v_minDmg: getVal('v_minDmg')
+    };
+
+    let target = document.getElementById('targetStat').value;
+    let addVal = getVal('addValue');
+    
+    let newStats = Object.assign({}, stats);
+    newStats[target] += addVal;
+
+    let scenarios = [
+        { title: '情境一：一般怪物 ＋ 基本攻擊', isBoss: false, isSkill: false },
+        { title: '情境二：一般怪物 ＋ 技能攻擊', isBoss: false, isSkill: true },
+        { title: '情境三：BOSS怪物 ＋ 基本攻擊', isBoss: true, isSkill: false },
+        { title: '情境四：BOSS怪物 ＋ 技能攻擊', isBoss: true, isSkill: true }
+    ];
+
+    let htmlOutput = '';
+    scenarios.forEach(s => {
+        let oldMult = calcMultiplier(stats, s.isBoss, s.isSkill);
+        let newMult = calcMultiplier(newStats, s.isBoss, s.isSkill);
+        let incRate = oldMult > 0 ? (newMult / oldMult) - 1 : 0;
+        let eqData = calculateEquivalent(stats, incRate, s.isBoss, s.isSkill);
+        htmlOutput += renderCard(s.title, incRate, eqData);
+    });
+
+    document.getElementById('resultsContainer').innerHTML = htmlOutput;
+}
+</script>
+</body>
+</html>
