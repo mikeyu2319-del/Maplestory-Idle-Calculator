@@ -108,6 +108,8 @@
     .btn-green:hover { background-color: #219653; }
     .btn-purple { background-color: #8e44ad; }
     .btn-purple:hover { background-color: #732d91; }
+    .btn-orange { background-color: #f39c12; }
+    .btn-orange:hover { background-color: #d35400; }
     
     .equip-card {
         border: 1px solid #e0e0e0;
@@ -198,17 +200,12 @@
     
     <div class="save-section">
         <div class="save-panel">
-            <select id="saveSlot">
-                <script>
-                    for(let i=1; i<=15; i++){
-                        document.write('<option value="'+i+'">記憶存檔 '+i+'</option>');
-                    }
-                </script>
-            </select>
+            <select id="saveSlot"></select>
             <button onclick="saveData()" class="btn-green">儲存資料</button>
             <button onclick="loadData()" class="btn-purple">讀取資料</button>
+            <button onclick="renameSlot()" class="btn-orange">重新命名</button>
         </div>
-        <p class="instruction">記憶存檔使用說明：請先在下拉選單選擇想要存放的欄位號碼，輸入完下方所有數值後點擊「儲存資料」，下次造訪網頁時只要選擇對應號碼並點擊「讀取資料」，即可瞬間恢復您的專屬面板數據</p>
+        <p class="instruction">記憶存檔使用說明：請先在下拉選單選擇想要存放的欄位號碼，輸入完下方所有數值後點擊「儲存資料」，下次造訪網頁時只要選擇對應號碼並點擊「讀取資料」，即可瞬間恢復您的專屬面板數據。您也可以點擊「重新命名」來為每個存檔自訂好記的名稱</p>
     </div>
 
     <div class="grid">
@@ -316,6 +313,36 @@ let statOptionsHtml = `
     <option value="v_finalDmg">最終傷害</option>
 `;
 
+function initSaveSlots() {
+    let select = document.getElementById('saveSlot');
+    let currentVal = select.value || '1';
+    select.innerHTML = '';
+    for(let i=1; i<=15; i++){
+        let customName = localStorage.getItem('ms_idle_calc_name_' + i);
+        let displayName = customName ? customName : '記憶存檔 ' + i;
+        let option = document.createElement('option');
+        option.value = i;
+        option.text = displayName;
+        select.appendChild(option);
+    }
+    select.value = currentVal;
+}
+
+function renameSlot() {
+    let slot = document.getElementById('saveSlot').value;
+    let currentName = localStorage.getItem('ms_idle_calc_name_' + slot) || '記憶存檔 ' + slot;
+    let newName = prompt('請輸入第 ' + slot + ' 欄的新名稱（留白則恢復預設）：', currentName);
+    
+    if (newName !== null) {
+        if (newName.trim() === '') {
+            localStorage.removeItem('ms_idle_calc_name_' + slot);
+        } else {
+            localStorage.setItem('ms_idle_calc_name_' + slot, newName.trim());
+        }
+        initSaveSlots();
+    }
+}
+
 function getVal(id) { return parseFloat(document.getElementById(id).value) || 0; }
 function setVal(id, val) { document.getElementById(id).value = val; }
 
@@ -326,7 +353,7 @@ function saveData() {
         data[statKeys[i]] = getVal(statKeys[i]);
     }
     localStorage.setItem('ms_idle_calc_' + slot, JSON.stringify(data));
-    alert('第 ' + slot + ' 筆資料儲存成功');
+    alert('資料已成功儲存至該欄位');
 }
 
 function loadData() {
@@ -339,9 +366,9 @@ function loadData() {
                 setVal(statKeys[i], data[statKeys[i]]);
             }
         }
-        alert('第 ' + slot + ' 筆資料讀取成功');
+        alert('資料讀取成功');
     } else {
-        alert('尚未建立第 ' + slot + ' 筆存檔');
+        alert('該欄位尚未存有紀錄');
     }
 }
 
@@ -529,6 +556,8 @@ function calculateEquipSwap() {
     document.getElementById('equipResultsContainer').innerHTML = htmlOutput;
 }
 
+// 頁面載入時初始化存檔清單與裝備欄位
+initSaveSlots();
 renderEquipSlots();
 </script>
 </body>
