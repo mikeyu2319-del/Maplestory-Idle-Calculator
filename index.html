@@ -372,9 +372,12 @@ function loadData() {
     }
 }
 
-function calcMultiplier(stats, isBoss, isSkill) {
-    let core = (stats.v_baseAtk * (1 + stats.v_atkPct/100)) * 
-               (stats.v_baseStat * (1 + stats.v_statPct/100)) * 
+function calcMultiplier(stats, baseStats, isBoss, isSkill) {
+    let baseStatContributionOriginal = baseStats.v_baseStat * (1 + baseStats.v_statPct/100);
+    let baseStatContributionNew = stats.v_baseStat * (1 + stats.v_statPct/100);
+    let finalBaseAtk = stats.v_baseAtk + (baseStatContributionNew - baseStatContributionOriginal);
+    
+    let core = (finalBaseAtk * (1 + stats.v_atkPct/100)) * 
                (1 + stats.v_dmg/100) * 
                (1 + stats.v_dmgAmp/100) * 
                (1 + stats.v_eleDmg/100) * 
@@ -392,12 +395,16 @@ function calculateEquivalent(stats, incRate, isBoss, isSkill) {
     let targetTypeKey = isBoss ? 'v_bossDmg' : 'v_normalDmg';
     let attackTypeKey = isSkill ? 'v_skillDmg' : 'v_basicDmg';
     
+    let reqFlatAtk = stats.v_baseAtk * incRate;
+    let reqBaseStat = reqFlatAtk / (1 + stats.v_statPct/100);
+    let reqStatPct = stats.v_baseStat > 0 ? (reqFlatAtk * 100 / stats.v_baseStat) : 0;
+    
     return [
-        { name: '攻擊力', req: stats.v_baseAtk * incRate },
+        { name: '攻擊力', req: reqFlatAtk },
         { name: '攻擊力(%)', req: (100 + stats.v_atkPct) * incRate },
         { name: '暴擊傷害(%)', req: stats.v_critDmg * incRate },
-        { name: '主副屬性', req: stats.v_baseStat * incRate },
-        { name: '主屬性(%)', req: (100 + stats.v_statPct) * incRate },
+        { name: '主副屬性', req: reqBaseStat },
+        { name: '主屬性(%)', req: reqStatPct },
         { name: '屬性比例傷害', req: (100 + stats.v_eleDmg) * incRate },
         { name: '傷害(%)', req: (100 + stats.v_dmg) * incRate },
         { name: '傷害增幅(%)', req: (100 + stats.v_dmgAmp) * incRate },
@@ -445,16 +452,16 @@ function calculate() {
 
     if (!isMutexTarget) {
         let s = scenarios[0];
-        let oldMult = calcMultiplier(stats, s.isBoss, s.isSkill);
-        let newMult = calcMultiplier(newStats, s.isBoss, s.isSkill);
+        let oldMult = calcMultiplier(stats, stats, s.isBoss, s.isSkill);
+        let newMult = calcMultiplier(newStats, stats, s.isBoss, s.isSkill);
         let incRate = oldMult > 0 ? (newMult / oldMult) - 1 : 0;
         let eqData = calculateEquivalent(stats, incRate, s.isBoss, s.isSkill);
         htmlOutput = renderCard('全情境通用效益分析 (共用屬性變動)', incRate, eqData, true);
     } else {
         for (let i = 0; i < scenarios.length; i++) {
             let s = scenarios[i];
-            let oldMult = calcMultiplier(stats, s.isBoss, s.isSkill);
-            let newMult = calcMultiplier(newStats, s.isBoss, s.isSkill);
+            let oldMult = calcMultiplier(stats, stats, s.isBoss, s.isSkill);
+            let newMult = calcMultiplier(newStats, stats, s.isBoss, s.isSkill);
             let incRate = oldMult > 0 ? (newMult / oldMult) - 1 : 0;
             let eqData = calculateEquivalent(stats, incRate, s.isBoss, s.isSkill);
             htmlOutput += renderCard(s.title, incRate, eqData, false);
@@ -520,7 +527,7 @@ function calculateEquipSwap() {
         for (let j = 1; j <= 4; j++) {
             let oldStat = document.getElementById(`old_equip_${i}_stat_${j}`).value;
             let oldVal = parseFloat(document.getElementById(`old_equip_${i}_val_${j}`).value) || 0;
-            newStats[oldStat] -= oldVal;
+            oldStats[oldStat] -= oldVal;
 
             let newStat = document.getElementById(`new_equip_${i}_stat_${j}`).value;
             let newVal = parseFloat(document.getElementById(`new_equip_${i}_val_${j}`).value) || 0;
@@ -538,8 +545,8 @@ function calculateEquipSwap() {
     let htmlOutput = '';
     for (let i = 0; i < scenarios.length; i++) {
         let s = scenarios[i];
-        let oldMult = calcMultiplier(oldStats, s.isBoss, s.isSkill);
-        let newMult = calcMultiplier(newStats, s.isBoss, s.isSkill);
+        let oldMult = calcMultiplier(oldStats, baseStats, s.isBoss, s.isSkill);
+        let newMult = calcMultiplier(newStats, baseStats, s.isBoss, s.isSkill);
         let incRate = oldMult > 0 ? (newMult / oldMult) - 1 : 0;
         let incPct = (incRate * 100).toFixed(4);
         let valClass = incRate >= 0 ? 'dps-increase' : 'dps-decrease';
@@ -556,7 +563,6 @@ function calculateEquipSwap() {
     document.getElementById('equipResultsContainer').innerHTML = htmlOutput;
 }
 
-// 頁面載入時初始化存檔清單與裝備欄位
 initSaveSlots();
 renderEquipSlots();
 </script>
